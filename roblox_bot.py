@@ -21,7 +21,6 @@ def keep_alive():
     t = Thread(target=run_web)
     t.start()
 
-
 # 👉 디스코드 봇 로직
 load_dotenv()
 
@@ -41,58 +40,31 @@ except ValueError:
     print("❗ DISCORD_CHANNEL_ID 환경변수가 올바른 숫자가 아닙니다. 기본값 사용.")
     channel_id = 1429833042096164884
 
-
-async def get_status_from_json_api():
-    url = "http://hostedstatus.com/1.0/status/59db90dbcdeb2f04dadcf16d"
-    try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url) as resp:
-                if resp.status != 200:
-                    print(f"❗ hostedstatus.com API 응답 오류: HTTP {resp.status}")
-                    return None
-                data = await resp.json()
-        return data.get("status")
-    except Exception as e:
-        print(f"❗ hostedstatus.com API 요청 중 예외 발생: {e}")
-        return None
-
-
 async def get_status_from_html():
     url = "https://status.roblox.com/"
     try:
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as resp:
                 if resp.status != 200:
-                    print(f"❗ Roblox 상태 페이지 응답 오류: HTTP {resp.status}")
                     return None
                 text = await resp.text()
         soup = BeautifulSoup(text, "html.parser")
         status_element = soup.select_one(".page-status__title")
         return status_element.text.strip() if status_element else None
     except Exception as e:
-        print(f"❗ Roblox 상태 페이지 크롤링 중 예외 발생: {e}")
+        print(f"❗ 상태 크롤링 중 오류 발생: {e}")
         return None
 
-
 async def get_roblox_status():
-    status = await get_status_from_json_api()
-    if status:
-        return f"(API) {status}"
-    else:
-        print("❗ hostedstatus.com API에서 상태를 못 받아옴, 크롤링 시도 중...")
     status = await get_status_from_html()
     if status:
         return f"(크롤링) {status}"
-    else:
-        print("❗ 크롤링에서도 상태 정보를 못 가져옴")
     return "상태 정보를 가져올 수 없습니다."
-
 
 @bot.event
 async def on_ready():
     print(f"✅ 봇 로그인됨: {bot.user}")
     check_status.start()
-
 
 @tasks.loop(minutes=5)
 async def check_status():
@@ -113,12 +85,10 @@ async def check_status():
     except Exception as e:
         print(f"❗ 상태 체크 중 오류 발생: {e}")
 
-
 @bot.command()
 async def robloxstatus(ctx):
     status = await get_roblox_status()
     await ctx.send(f"📡 현재 Roblox 상태: **{status}**")
-
 
 # 👉 HTTP 서버 먼저 켜고, 봇 실행
 if __name__ == "__main__":
