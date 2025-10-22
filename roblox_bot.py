@@ -100,8 +100,11 @@ async def check_status():
 
 @bot.command()
 async def robloxstatus(ctx):
+    print(f"[명령어 호출] {ctx.author} 가 {ctx.channel} 에서 !robloxstatus 실행")  # 👈 누가 어디서 명령어 실행했는지 로그
     status = await get_roblox_status()
+    print(f"[명령어 결과] {status}")  # 👈 상태 정보 결과 로그
     await ctx.send(f"📡 현재 Roblox 상태: **{status}**")
+
 
 # 👉 HTTP 서버 먼저 켜고, 봇 실행
 if __name__ == "__main__":
