@@ -4,7 +4,25 @@ import discord
 from discord.ext import commands, tasks
 import aiohttp
 from bs4 import BeautifulSoup
+from flask import Flask
+from threading import Thread
 
+# 👉 Flask 웹 서버 구성
+app = Flask(__name__)
+
+@app.route("/")
+def home():
+    return "✅ Roblox Discord Bot 작동 중!"
+
+def run_web():
+    app.run(host="0.0.0.0", port=8080)
+
+def keep_alive():
+    t = Thread(target=run_web)
+    t.start()
+
+
+# 👉 디스코드 봇 로직
 load_dotenv()
 
 DISCORD_BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")
@@ -94,8 +112,10 @@ async def robloxstatus(ctx):
     await ctx.send(f"📡 현재 Roblox 상태: **{status}**")
 
 
+# 👉 HTTP 서버 먼저 켜고, 봇 실행
 if __name__ == "__main__":
     if not DISCORD_BOT_TOKEN:
         print("❗ DISCORD_BOT_TOKEN 환경변수가 설정되지 않았습니다.")
     else:
+        keep_alive()  # 🟢 Flask 서버 켜기
         bot.run(DISCORD_BOT_TOKEN)
