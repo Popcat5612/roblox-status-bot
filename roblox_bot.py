@@ -48,10 +48,12 @@ async def get_status_from_json_api():
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as resp:
                 if resp.status != 200:
+                    print(f"❗ hostedstatus.com API 응답 오류: HTTP {resp.status}")
                     return None
                 data = await resp.json()
         return data.get("status")
-    except:
+    except Exception as e:
+        print(f"❗ hostedstatus.com API 요청 중 예외 발생: {e}")
         return None
 
 
@@ -61,12 +63,14 @@ async def get_status_from_html():
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as resp:
                 if resp.status != 200:
+                    print(f"❗ Roblox 상태 페이지 응답 오류: HTTP {resp.status}")
                     return None
                 text = await resp.text()
         soup = BeautifulSoup(text, "html.parser")
         status_element = soup.select_one(".page-status__title")
         return status_element.text.strip() if status_element else None
-    except:
+    except Exception as e:
+        print(f"❗ Roblox 상태 페이지 크롤링 중 예외 발생: {e}")
         return None
 
 
@@ -74,9 +78,13 @@ async def get_roblox_status():
     status = await get_status_from_json_api()
     if status:
         return f"(API) {status}"
+    else:
+        print("❗ hostedstatus.com API에서 상태를 못 받아옴, 크롤링 시도 중...")
     status = await get_status_from_html()
     if status:
         return f"(크롤링) {status}"
+    else:
+        print("❗ 크롤링에서도 상태 정보를 못 가져옴")
     return "상태 정보를 가져올 수 없습니다."
 
 
